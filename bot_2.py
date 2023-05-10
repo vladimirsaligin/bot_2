@@ -22,5 +22,4 @@ app = ApplicationBuilder().token("5987197501:AAFh8an4ZvHgwyFhjw7sQkU6gsAlS3qIjqo
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("hello", hello))
 app.add_handler(CallbackQueryHandler(menu, pattern='menu'))
-
 app.run_polling()
