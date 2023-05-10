@@ -1,38 +1,26 @@
-import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-def start(update, context):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Обработчик команды /start"""
-    context.bot.send_message(chat_id=update.effective_chat.id, text='Привет, я телеграм-бот! Я могу повторять за вами любые текстовые сообщения, которые вы мне отправите.')
+    keyboard = [[InlineKeyboardButton("Показать меню", callback_data='menu')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('Привет, я телеграм-бот! Я могу повторять за вами любые текстовые сообщения, которые вы мне отправите.', reply_markup=reply_markup)
 
-def help(update, context):
-    """Обработчик команды /help"""
-    context.bot.send_message(chat_id=update.effective_chat.id, text='Это помощь!')
+async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Обработчик команды /hello"""
+    await update.message.reply_text(f'Привет, {update.effective_user.first_name}!')
 
-def echo(update, context):
-    """Обработчик текстовых сообщений"""
-    text = update.message.text
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text)
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Обработчик кнопки меню"""
+    text = "Это меню!"
+    await update.callback_query.answer()
+    await update.callback_query.edit_message_text(text=text)
 
-def main():
-    """Основная функция бота"""
+app = ApplicationBuilder().token("5987197501:AAFh8an4ZvHgwyFhjw7sQkU6gsAlS3qIjqo").build()
 
-    # Создаем экземпляр бота и получаем его токен
-    bot = telegram.Bot(token='YOUR_BOT_TOKEN')
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("hello", hello))
+app.add_handler(CallbackQueryHandler(menu, pattern='menu'))
 
-    # Создаем экземпляр Updater и передаем ему бота
-    updater = Updater(bot=bot, use_context=True)
-
-    # Добавляем обработчики команд и текстовых сообщений
-    updater.dispatcher.add_handler(CommandHandler('start', start))
-    updater.dispatcher.add_handler(CommandHandler('help', help))
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
-
-    # Запускаем бота
-    updater.start_polling()
-
-    # Запускаем цикл обработки сообщений
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+app.run_polling()
